@@ -51,13 +51,57 @@ def neg(c1):
 def sub(c1,c2):
     return add(c1, neg(c2))
 
+class Animation:
+    def __init__(self, filename, start_frame, end_frame):
+        self.img = pygame.image.load(filename)
+        w,h = self.img.get_size()
+        self.frame_width = h
+        self.frame_height = h
+        #self.surface = pygame.Surface((self.frame_width,self.frame_height))
+        self.n_frames = end_frame - start_frame + 1
+        self.start_frame = start_frame
+        self.frames = [
+            self.img.subsurface(pygame.Rect(f*self.frame_width, 0, self.frame_width, self.frame_height)) for f in range(start_frame, end_frame+1)
+        ]
+
+    def get_frame(self, n):
+        i = (n % self.n_frames) + self.start_frame
+        return self.frames[i]
+        
+
+class Character:
+    def __init__(self):
+        self.anims = {}
+        self.cur_anim = None
+        self.cur_frame = 0
+        self.size = None
+
+    def draw(self, surf, pos):
+        if self.cur_anim is None:
+            return
+        anim = self.anims[self.cur_anim]
+        f = self.cur_frame
+        img = anim.get_frame(f)
+        surf.blit(img, pos)
+
+    def next_frame(self):
+        self.cur_frame += 1
+
+    def add_anim(self, name, filename, start, end):
+        a = Animation(filename, start, end)
+        self.anims[name] = a
+        if self.size is None:
+            self.size = (a.frame_width, a.frame_height)
+
+    def set_anim(self, name):
+        self.cur_anim = name
+
 class Game:
     def __init__(self):
-        self.win = pygame.display.set_mode((1000,700))
+        self.win = pygame.display.set_mode((1000,700), pygame.RESIZABLE)
         self.stop_event = threading.Event()
         self.can_render = threading.Event()
         self.can_render.set()
-        self.image = pygame.image.load("image.png")
         self.last_time = time.time()
         self.font = pygame.font.SysFont("monospace", 18)
         self.load_map('Tiled/Map1.tmx')
@@ -65,11 +109,23 @@ class Game:
         self.selection = None
         self.path_plan = None
 
+        self.player = Character()
+        self.player.add_anim('idle', 'Character1.png', 0, 0)
+        self.player.add_anim('walk', 'Character1.png', 1, 8)
+        self.player.set_anim('idle')
+
+        self.all_chars = [self.player]
+
+
     def grid_to_surface(self, x, y):
         return grid_to_surface(x,y,self.w,self.h,self.tw,self.th)
 
     def surface_to_grid(self, x, y):
         return surface_to_grid(x,y,self.w,self.h,self.tw,self.th)
+
+    def coords(self, pos, size):
+        delta = sub((self.tw/2, self.th), size)
+        return add(delta, add(self.offset, self.grid_to_surface(*pos)))
 
     def load_map(self, name):
         self.map = load_tmx(name)
@@ -97,7 +153,8 @@ class Game:
         self.room = g
 
     def update(self, timediff):
-        pass
+        for c in self.all_chars:
+            c.next_frame()
 
     def draw_cursor(self, pos, color):
         cx,cy = pos
@@ -125,6 +182,8 @@ class Game:
             self.draw_cursor(self.selection, (0,255,0))
         if self.path_plan is not None:
             self.draw_path(self.path_plan, (255,255,0))
+        pos = self.coords((55,53), self.player.size)
+        self.player.draw(self.win, pos)
 
     def to_cursor_pos(self, pos):
         mouse_pos = sub(pos, self.offset)
@@ -148,6 +207,7 @@ class Game:
                 if ev.button == 1:
                     self.selection = self.cursor
                     self.path_plan = None
+                    print(self.cursor)
             case _:
                 print(f"Unknown event: {ev}")
 
