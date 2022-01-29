@@ -53,7 +53,31 @@
    <property name="wall_south" type="bool" value="true"/>
   </properties>
  </tile>
+ <tile id="31">
+  <properties>
+   <property name="wall_east" type="bool" value="false"/>
+   <property name="wall_south" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="32">
+  <properties>
+   <property name="wall_east" type="bool" value="true"/>
+   <property name="wall_south" type="bool" value="false"/>
+  </properties>
+ </tile>
  <tile id="40">
+  <properties>
+   <property name="wall_east" type="bool" value="true"/>
+   <property name="wall_south" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="50">
+  <properties>
+   <property name="wall_east" type="bool" value="true"/>
+   <property name="wall_south" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="60">
   <properties>
    <property name="wall_east" type="bool" value="true"/>
    <property name="wall_south" type="bool" value="true"/>

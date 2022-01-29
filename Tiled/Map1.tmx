@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="isometric" renderorder="right-down" width="16" height="16" tilewidth="48" tileheight="24" infinite="0" nextlayerid="4" nextobjectid="1">
+<map version="1.5" tiledversion="1.7.2" orientation="isometric" renderorder="right-down" width="16" height="16" tilewidth="48" tileheight="24" infinite="0" nextlayerid="4" nextobjectid="16">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <layer id="1" name="Floor" width="16" height="16">
   <data encoding="csv">
@@ -41,5 +41,22 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="3" name="Points"/>
+ <objectgroup id="3" name="Points">
+  <object id="7" x="216" y="120" width="48" height="72"/>
+  <object id="9" x="96" y="72" width="96" height="72"/>
+  <object id="11" x="96" y="144" width="48" height="96"/>
+  <object id="13" x="168" y="216" width="96" height="48"/>
+  <object id="14" x="300" y="132">
+   <properties>
+    <property name="guard_start" type="bool" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="15" x="300" y="276">
+   <properties>
+    <property name="guard_finish" type="bool" value="true"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
 </map>
