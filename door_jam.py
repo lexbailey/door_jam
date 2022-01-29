@@ -244,6 +244,8 @@ class Game:
 
         self.all_chars = [self.player, self.player2, self.guard]
 
+        self.apply_scale()
+
     def load_character(self, sprite_sheet, size=(48,48)):
         new_char = Character(self.marker, (self.tw, self.th))
         for i, heading in enumerate(['east', 'south', 'west', 'north']):
@@ -357,8 +359,7 @@ class Game:
     def render(self):
         self.win.fill((0,0,0))
         ssize = mul(self.map_surface.get_size(), self.scale)
-        scaled_map = pygame.transform.scale(self.map_surface, ssize)
-        self.win.blit(scaled_map, self.offset)
+        self.win.blit(self.scaled_map, self.offset)
         if self.cursor is not None:
             self.draw_cursor(self.cursor, (255,0,0))
         if self.selection is not None:
@@ -376,15 +377,22 @@ class Game:
                 chars_for_depth[depth] = chars
             chars.append(c)
         for depth in range(0, self.w+self.h):
-            part = self.map_parts.get(depth)
+            part = self.scaled_map_parts.get(depth)
             if part is not None:
-                scaled_part = pygame.transform.scale(part, ssize)
-                scaled_part.set_alpha(255)
-                self.win.blit(scaled_part, self.offset)
+                self.win.blit(part, self.offset)
             chars = chars_for_depth.get(depth, [])
             for char in chars:
                 pos = self.coords(char.pos, char.size)
                 char.draw(self.win, pos, self.scale)
+
+    def apply_scale(self):
+        ssize = mul(self.map_surface.get_size(), self.scale)
+        self.scaled_map = pygame.transform.scale(self.map_surface, ssize)
+        self.scaled_map_parts = {}
+        for depth in self.map_parts:
+            part = self.map_parts[depth]
+            part.set_alpha(255)
+            self.scaled_map_parts[depth] = pygame.transform.scale(part, ssize)
 
     def to_cursor_pos(self, pos):
         mouse_pos = mul(sub(pos, self.offset), 1/self.scale)
@@ -448,6 +456,7 @@ class Game:
                 old_scale = self.scale
                 self.scale = self.scroll/10
                 self.offset = sub(self.last_mouse_pos, mul(mul(sub(self.last_mouse_pos, self.offset), 1/old_scale), self.scale))
+                self.apply_scale()
             case _:
                 print(f"Unknown event: {ev}")
 
