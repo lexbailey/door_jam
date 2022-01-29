@@ -51,30 +51,79 @@ def neg(c1):
 def sub(c1,c2):
     return add(c1, neg(c2))
 
+def mul(a, b):
+    x,y=a
+    return (x*b, y*b)
+
+def vmul(a, b):
+    x1,y1=a
+    x2,y2=b
+    return (x1*x2, y1*y2)
+
+NORTH = (0,-1)
+EAST = (1,0)
+SOUTH = (0,1)
+WEST = (-1,0)
+
+SCREEN_NORTH = (1,-1)
+SCREEN_EAST = (1,1)
+SCREEN_SOUTH = (-1,1)
+SCREEN_WEST = (-1,-1)
+
+def heading_to_screen(heading):
+    return {
+        NORTH:SCREEN_NORTH
+        ,EAST:SCREEN_EAST
+        ,SOUTH:SCREEN_SOUTH
+        ,WEST:SCREEN_WEST
+    }[heading]
+
 class Animation:
-    def __init__(self, filename, start_frame, end_frame):
+    def __init__(self, filename, size, start_frame, end_frame):
+        w,h = size
         self.img = pygame.image.load(filename)
-        w,h = self.img.get_size()
-        self.frame_width = h
+        self.frame_width = w
         self.frame_height = h
-        #self.surface = pygame.Surface((self.frame_width,self.frame_height))
         self.n_frames = end_frame - start_frame + 1
         self.start_frame = start_frame
+        (iw,ih) = self.img.get_size()
+        frames_per_row = math.floor(iw/w)
         self.frames = [
-            self.img.subsurface(pygame.Rect(f*self.frame_width, 0, self.frame_width, self.frame_height)) for f in range(start_frame, end_frame+1)
+            self.img.subsurface(pygame.Rect(
+                (f%frames_per_row)*w, (f//frames_per_row)*h,
+                self.frame_width, self.frame_height
+            )) for f in range(start_frame, end_frame+1)
         ]
 
     def get_frame(self, n):
-        i = (n % self.n_frames) + self.start_frame
+        i = (n % self.n_frames)
         return self.frames[i]
-        
 
 class Character:
-    def __init__(self):
+    def __init__(self, marker, tile_unit):
         self.anims = {}
+        self.tile_unit = tile_unit
         self.cur_anim = None
         self.cur_frame = 0
         self.size = None
+        self.pos = (0,0)
+        self.target = (0,0)
+        self.selected = False
+        self.marker = marker
+        self.frames_per_tile = 20
+        self.step_progress = 0
+        self.path = None
+        self.heading = EAST
+        self.screen_heading = SCREEN_EAST
+
+    def is_selected(self):
+        return self.selected
+
+    def select(self):
+        self.selected = True
+
+    def clear_selection(self):
+        self.selected = False
 
     def draw(self, surf, pos):
         if self.cur_anim is None:
@@ -82,19 +131,47 @@ class Character:
         anim = self.anims[self.cur_anim]
         f = self.cur_frame
         img = anim.get_frame(f)
-        surf.blit(img, pos)
+        lpos = add(pos, vmul(self.screen_heading, mul(self.tile_unit, (self.step_progress/self.frames_per_tile)/2)))
+        surf.blit(img, lpos)
+        if self.selected:
+            surf.blit(self.marker.get_frame(f), add(lpos, (16, -4)))
 
     def next_frame(self):
         self.cur_frame += 1
+        if self.pos != self.target:
+            self.step_progress = self.step_progress + 1
+            if self.step_progress == self.frames_per_tile:
+                self.pos = self.target
+                self.walk_path(self.path)
 
-    def add_anim(self, name, filename, start, end):
-        a = Animation(filename, start, end)
+    def add_anim(self, name, filename, size, start, end):
+        a = Animation(filename, size, start, end)
         self.anims[name] = a
         if self.size is None:
             self.size = (a.frame_width, a.frame_height)
 
     def set_anim(self, name):
         self.cur_anim = name
+
+    def warp_to(self, pos):
+        self.pos = pos
+        self.target = pos
+        self.step_progress = 0
+
+    def walk_path(self, path):
+        self.step_progress = 0
+        if path is not None:
+            if len(path) > 0:
+                [self.target, *self.path] = path
+                if self.target == self.pos:
+                    self.walk_path(self.path)
+                else:
+                    self.heading = sub(self.target, self.pos)
+                    self.screen_heading = heading_to_screen(self.heading)
+            else:
+                self.target = self.pos
+        else:
+            self.target = self.pos
 
 class Game:
     def __init__(self):
@@ -109,10 +186,15 @@ class Game:
         self.selection = None
         self.path_plan = None
 
-        self.player = Character()
-        self.player.add_anim('idle', 'Character1.png', 0, 0)
-        self.player.add_anim('walk', 'Character1.png', 1, 8)
-        self.player.set_anim('idle')
+        self.three_frame = 0
+
+        marker = Animation('Pointer.png', (16,16), 0, 15)
+
+        self.player = Character(marker, (self.tw, self.th))
+        self.player.add_anim('idle', 'Character1.png', (48,48), 0, 0)
+        self.player.add_anim('walk_east', 'Character1.png', (48,48), 1, 8)
+        self.player.set_anim('walk_east')
+        self.player.warp_to((52,54))
 
         self.all_chars = [self.player]
 
@@ -153,8 +235,11 @@ class Game:
         self.room = g
 
     def update(self, timediff):
-        for c in self.all_chars:
-            c.next_frame()
+        # Characters move one animation frame every 3 game frames
+        self.three_frame = (self.three_frame + 1) % 3
+        if self.three_frame == 0:
+            for c in self.all_chars:
+                c.next_frame()
 
     def draw_cursor(self, pos, color):
         cx,cy = pos
@@ -182,12 +267,23 @@ class Game:
             self.draw_cursor(self.selection, (0,255,0))
         if self.path_plan is not None:
             self.draw_path(self.path_plan, (255,255,0))
-        pos = self.coords((55,53), self.player.size)
-        self.player.draw(self.win, pos)
+        for c in self.all_chars:
+            pos = self.coords(c.pos, c.size)
+            self.player.draw(self.win, pos)
 
     def to_cursor_pos(self, pos):
         mouse_pos = sub(pos, self.offset)
         return self.surface_to_grid(*mouse_pos)
+
+    def select_character(self, pos):
+        selected = None
+        for c in self.all_chars:
+            if selected is None and c.pos == pos:
+                c.select()
+                selected = c
+            else:
+                c.clear_selection()
+        return selected
             
     def event(self, ev):
         match ev.type:
@@ -205,9 +301,18 @@ class Game:
                     self.path_plan = None
             case pygame.MOUSEBUTTONDOWN:
                 if ev.button == 1:
-                    self.selection = self.cursor
-                    self.path_plan = None
-                    print(self.cursor)
+                    if self.selection and self.cursor:
+                        self.selected_char.walk_path(self.path_plan)
+                        self.selected_char.clear_selection()
+                        self.path_plan = None
+                        self.selection = None
+                        self.selected_char = None
+                    else:
+                        char = self.select_character(self.cursor)
+                        if char is not None:
+                            self.selection = self.cursor
+                            self.path_plan = None
+                            self.selected_char = char
             case _:
                 print(f"Unknown event: {ev}")
 
