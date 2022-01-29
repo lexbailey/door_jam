@@ -395,7 +395,7 @@ class Game:
             part = self.map_parts[depth]
             self.scaled_map_parts[depth] = pygame.transform.scale(part, ssize)
             self.scaled_map_parts[depth].convert_alpha()
-            self.scaled_map_parts[depth].set_alpha(255)
+            self.scaled_map_parts[depth].set_colorkey((0, 0, 0))
 
     def to_cursor_pos(self, pos):
         mouse_pos = mul(sub(pos, self.offset), 1/self.scale)
