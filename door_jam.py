@@ -147,10 +147,12 @@ class Character:
 
     def next_frame(self):
         self.cur_frame += 1
-        if self.pos != self.target:
+        if self.pos != self.target or self.step_progress < 0:
             self.step_progress = self.step_progress + 1
-            if self.step_progress == self.frames_per_tile:
+            if self.step_progress >= self.frames_per_tile/2:
                 self.pos = self.target
+                self.step_progress = -(self.frames_per_tile/2)
+            if self.step_progress == 0:
                 self.walk_path(self.path)
 
     def add_anim(self, name, filename, size, start, end):
@@ -271,9 +273,10 @@ class Game:
         self.th = self.map.tileheight
         self.sh, self.sw = surface_geom(self.w, self.h, self.tw, self.th)
         self.map_surface = pygame.Surface((self.sh,self.sw))
+        self.map_parts = {}
         g = nx.Graph()
         layer_id = lambda layer: next(i for i, l in enumerate(self.map.layers) if l==layer)
-        for layer,name in [(self.map.get_layer_by_name(name),name) for name in ['Floor', 'Walls']]:
+        for layer,name in [(self.map.get_layer_by_name(name),name) for name in ['Floor', 'Walls', 'Doors']]:
             if not isinstance(layer, pytmx.pytmx.TiledTileLayer):
                 continue
             for x, y, img_gid in layer.iter_data():
@@ -282,7 +285,15 @@ class Game:
                     continue
                 delta = sub((self.tw/2, self.th), img.get_size())
                 pos = add(self.grid_to_surface(x,y), delta)
-                self.map_surface.blit(img, pos)
+                if name == 'Floor':
+                    self.map_surface.blit(img, pos)
+                else:
+                    depth = x+y+1
+                    part = self.map_parts.get(depth)
+                    if part is None:
+                        part = pygame.Surface((self.sh, self.sw))
+                        self.map_parts[depth]=part
+                    part.blit(img, pos)
                 props = self.map.get_tile_properties_by_gid(img_gid)
                 if props and props.get('floor', False):
                     g.add_node((x,y))
@@ -302,9 +313,7 @@ class Game:
                 for from_, to in to_remove:
                     try:
                         g.remove_edge(from_, to)
-                        print("removed: ", from_, to)
                     except nx.NetworkXError:
-                        print("not removed: ", from_, to)
                         pass
         self.offset = (100,100)
         self.room = g
@@ -348,8 +357,7 @@ class Game:
     def render(self):
         self.win.fill((0,0,0))
         ssize = mul(self.map_surface.get_size(), self.scale)
-        scaled_map = pygame.Surface(ssize)
-        pygame.transform.scale(self.map_surface, ssize, scaled_map)
+        scaled_map = pygame.transform.scale(self.map_surface, ssize)
         self.win.blit(scaled_map, self.offset)
         if self.cursor is not None:
             self.draw_cursor(self.cursor, (255,0,0))
@@ -357,9 +365,26 @@ class Game:
             self.draw_cursor(self.selection, (0,255,0))
         if self.path_plan is not None:
             self.draw_path(self.path_plan, (255,255,0))
+        chars_for_depth = {}
         for c in self.all_chars:
             pos = self.coords(c.pos, c.size)
-            c.draw(self.win, pos, self.scale)
+            cx,cy=c.pos
+            depth = cx+cy
+            chars = chars_for_depth.get(depth, None)
+            if chars is None:
+                chars = list()
+                chars_for_depth[depth] = chars
+            chars.append(c)
+        for depth in range(0, self.w+self.h):
+            part = self.map_parts.get(depth)
+            if part is not None:
+                scaled_part = pygame.transform.scale(part, ssize)
+                scaled_part.set_alpha(255)
+                self.win.blit(scaled_part, self.offset)
+            chars = chars_for_depth.get(depth, [])
+            for char in chars:
+                pos = self.coords(char.pos, char.size)
+                char.draw(self.win, pos, self.scale)
 
     def to_cursor_pos(self, pos):
         mouse_pos = mul(sub(pos, self.offset), 1/self.scale)
