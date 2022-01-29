@@ -5,6 +5,7 @@ import pygame
 import threading
 import time
 from enum import Enum
+import pytmx
 from pytmx.util_pygame import load_pygame as load_tmx
 import traceback
 import networkx as nx
@@ -84,6 +85,7 @@ class Animation:
         self.img = pygame.image.load(filename)
         self.frame_width = w
         self.frame_height = h
+        self.size = size
         self.n_frames = end_frame - start_frame + 1
         self.start_frame = start_frame
         (iw,ih) = self.img.get_size()
@@ -115,6 +117,7 @@ class Character:
         self.path = None
         self.heading = EAST
         self.screen_heading = SCREEN_EAST
+        self.selectable = True
 
     def is_selected(self):
         return self.selected
@@ -125,16 +128,22 @@ class Character:
     def clear_selection(self):
         self.selected = False
 
-    def draw(self, surf, pos):
+    def draw(self, surf, pos, scale):
         if self.cur_anim is None:
             return
         anim = self.anims[self.cur_anim]
         f = self.cur_frame
         img = anim.get_frame(f)
-        lpos = add(pos, vmul(self.screen_heading, mul(self.tile_unit, (self.step_progress/self.frames_per_tile)/2)))
-        surf.blit(img, lpos)
+        lpos = add(pos, mul(vmul(self.screen_heading, mul(self.tile_unit, (self.step_progress/self.frames_per_tile)/2)), scale))
+
+        newsize = mul(self.size, scale)
+        scaled_char = pygame.transform.scale(img, newsize)
+
+        surf.blit(scaled_char, lpos)
         if self.selected:
-            surf.blit(self.marker.get_frame(f), add(lpos, (16, -4)))
+            newsize = mul(self.marker.size, scale)
+            scaled_marker = pygame.transform.scale(self.marker.get_frame(f), newsize)
+            surf.blit(scaled_marker, add(lpos, mul((16, -4), scale)))
 
     def next_frame(self):
         self.cur_frame += 1
@@ -158,6 +167,16 @@ class Character:
         self.target = pos
         self.step_progress = 0
 
+    def idle(self):
+        self.set_anim(
+            {
+                NORTH: 'idle_north'
+                ,EAST: 'idle_east'
+                ,SOUTH: 'idle_south'
+                ,WEST: 'idle_west'
+            }[self.heading]
+        ) 
+
     def walk_path(self, path):
         self.step_progress = 0
         if path is not None:
@@ -168,10 +187,20 @@ class Character:
                 else:
                     self.heading = sub(self.target, self.pos)
                     self.screen_heading = heading_to_screen(self.heading)
+                    self.set_anim(
+                        {
+                            NORTH: 'walk_north'
+                            ,EAST: 'walk_east'
+                            ,SOUTH: 'walk_south'
+                            ,WEST: 'walk_west'
+                        }[self.heading]
+                    )
             else:
                 self.target = self.pos
+                self.idle()
         else:
             self.target = self.pos
+            self.idle()
 
 class Game:
     def __init__(self):
@@ -186,18 +215,34 @@ class Game:
         self.selection = None
         self.path_plan = None
 
+        self.panning = False
+
+        self.scale = 1
+        self.scroll = 10
+
         self.three_frame = 0
 
-        marker = Animation('Pointer.png', (16,16), 0, 15)
+        self.marker = Animation('Pointer.png', (16,16), 0, 15)
 
-        self.player = Character(marker, (self.tw, self.th))
-        self.player.add_anim('idle', 'Character1.png', (48,48), 0, 0)
-        self.player.add_anim('walk_east', 'Character1.png', (48,48), 1, 8)
-        self.player.set_anim('walk_east')
-        self.player.warp_to((52,54))
+        self.player = self.load_character('Character1.png')
+        self.player2 = self.load_character('Character1.png')
+        self.player.warp_to((3,2))
+        self.player2.warp_to((7,13))
 
-        self.all_chars = [self.player]
+        self.guard = self.load_character('Guard.png')
+        self.guard.selectable = False
+        self.guard.warp_to((0,0))
 
+        self.all_chars = [self.player, self.player2, self.guard]
+
+    def load_character(self, sprite_sheet, size=(48,48)):
+        new_char = Character(self.marker, (self.tw, self.th))
+        for i, heading in enumerate(['east', 'south', 'west', 'north']):
+            new_char.add_anim(f'idle_{heading}', sprite_sheet, size, i*9, i*9)
+            new_char.add_anim(f'walk_{heading}', sprite_sheet, size, (i*9)+1, (i*9)+8)
+        new_char.set_anim('idle_east')
+        new_char.warp_to((0,0))
+        return new_char
 
     def grid_to_surface(self, x, y):
         return grid_to_surface(x,y,self.w,self.h,self.tw,self.th)
@@ -205,9 +250,11 @@ class Game:
     def surface_to_grid(self, x, y):
         return surface_to_grid(x,y,self.w,self.h,self.tw,self.th)
 
-    def coords(self, pos, size):
+    def coords(self, pos, size=None):
+        if size is None:
+            size = (self.tw/2, self.th)
         delta = sub((self.tw/2, self.th), size)
-        return add(delta, add(self.offset, self.grid_to_surface(*pos)))
+        return add(self.offset, mul(add(delta, self.grid_to_surface(*pos)),self.scale))
 
     def load_map(self, name):
         self.map = load_tmx(name)
@@ -218,20 +265,41 @@ class Game:
         self.sh, self.sw = surface_geom(self.w, self.h, self.tw, self.th)
         self.map_surface = pygame.Surface((self.sh,self.sw))
         g = nx.Graph()
-        for i, layer in enumerate(self.map.visible_layers):
-            for x, y, img in layer.tiles():
+        layer_id = lambda layer: next(i for i, l in enumerate(self.map.layers) if l==layer)
+        for layer,name in [(self.map.get_layer_by_name(name),name) for name in ['Floor', 'Walls']]:
+            if not isinstance(layer, pytmx.pytmx.TiledTileLayer):
+                continue
+            for x, y, img_gid in layer.iter_data():
+                img = self.map.get_tile_image_by_gid(img_gid)
+                if img is None:
+                    continue
                 delta = sub((self.tw/2, self.th), img.get_size())
                 pos = add(self.grid_to_surface(x,y), delta)
                 self.map_surface.blit(img, pos)
-                props = self.map.get_tile_properties(x, y, i)
-                if props and props['floor']:
+                props = self.map.get_tile_properties_by_gid(img_gid)
+                if props and props.get('floor', False):
                     g.add_node((x,y))
                     for ox, oy in [(x-1,y),(x,y-1)]:
-                        other = self.map.get_tile_properties(ox, oy, i)
-                        if other and other['floor']:
+                        other = self.map.get_tile_properties(ox, oy, layer_id(layer))
+                        if other and other.get('floor',False):
                             g.add_edge((x,y), (ox,oy))
-        x,y=self.grid_to_surface(45,45)
-        self.offset = (-x+300,-y+100)
+                east_wall = props is not None and props.get('wall_east', False)
+                south_wall = props is not None and props.get('wall_south', False)
+                to_remove = []
+                if east_wall:
+                    other = add(EAST, (x,y))
+                    to_remove.append(((x,y), other))
+                if south_wall:
+                    other = add(SOUTH, (x,y))
+                    to_remove.append(((x,y), other))
+                for from_, to in to_remove:
+                    try:
+                        g.remove_edge(from_, to)
+                        print("removed: ", from_, to)
+                    except nx.NetworkXError:
+                        print("not removed: ", from_, to)
+                        pass
+        self.offset = (100,100)
         self.room = g
 
     def update(self, timediff):
@@ -244,23 +312,28 @@ class Game:
     def draw_cursor(self, pos, color):
         cx,cy = pos
         gx,gy = add(self.offset, self.grid_to_surface(cx,cy))
+        gx,gy = self.coords((cx,cy))
+        s = self.scale
         pygame.draw.aalines(self.win, color, True, [
             (gx,gy)
-            ,(gx+(self.tw/2), gy+(self.th/2))
-            ,(gx,gy+self.th)
-            ,(gx-(self.tw/2), gy+(self.th/2))
+            ,(gx+(self.tw/2*s), gy+(self.th/2*s))
+            ,(gx,gy+self.th*s)
+            ,(gx-(self.tw/2*s), gy+(self.th/2*s))
         ])
 
     def draw_path(self, path, color):
         if len(path) < 2:
             return
         pygame.draw.aalines(self.win, color, False, [
-            add(add(self.offset, self.grid_to_surface(*p)), (0, self.th/2)) for p in path
+            add(self.offset, mul(add(self.grid_to_surface(*p), (0, self.th/2)), self.scale)) for p in path
         ])
 
     def render(self):
         self.win.fill((0,0,0))
-        self.win.blit(self.map_surface, self.offset)
+        ssize = mul(self.map_surface.get_size(), self.scale)
+        scaled_map = pygame.Surface(ssize)
+        pygame.transform.scale(self.map_surface, ssize, scaled_map)
+        self.win.blit(scaled_map, self.offset)
         if self.cursor is not None:
             self.draw_cursor(self.cursor, (255,0,0))
         if self.selection is not None:
@@ -269,16 +342,16 @@ class Game:
             self.draw_path(self.path_plan, (255,255,0))
         for c in self.all_chars:
             pos = self.coords(c.pos, c.size)
-            self.player.draw(self.win, pos)
+            c.draw(self.win, pos, self.scale)
 
     def to_cursor_pos(self, pos):
-        mouse_pos = sub(pos, self.offset)
+        mouse_pos = mul(sub(pos, self.offset), 1/self.scale)
         return self.surface_to_grid(*mouse_pos)
 
     def select_character(self, pos):
         selected = None
         for c in self.all_chars:
-            if selected is None and c.pos == pos:
+            if selected is None and c.pos == pos and c.selectable:
                 c.select()
                 selected = c
             else:
@@ -288,9 +361,14 @@ class Game:
     def event(self, ev):
         match ev.type:
             case pygame.MOUSEMOTION:
+                self.last_mouse_pos = ev.pos
                 mouse_pos = self.to_cursor_pos(ev.pos)
-                props = self.map.get_tile_properties(*mouse_pos,0)
-                if props and props['floor']:
+                props = None
+                try:
+                    props = self.map.get_tile_properties(*mouse_pos,0)
+                except Exception:
+                    pass
+                if props and props.get('floor',False):
                     self.cursor = mouse_pos
                     if self.selection:
                         self.path_plan = nx.shortest_path(self.room, self.selection, self.cursor)
@@ -299,10 +377,13 @@ class Game:
                 else:
                     self.cursor = None
                     self.path_plan = None
+                if self.panning:
+                    self.offset = add(self.pan_start_offset, sub(ev.pos, self.pan_start_mouse))
             case pygame.MOUSEBUTTONDOWN:
                 if ev.button == 1:
-                    if self.selection and self.cursor:
-                        self.selected_char.walk_path(self.path_plan)
+                    if self.selection:
+                        if self.cursor:
+                            self.selected_char.walk_path(self.path_plan)
                         self.selected_char.clear_selection()
                         self.path_plan = None
                         self.selection = None
@@ -313,6 +394,18 @@ class Game:
                             self.selection = self.cursor
                             self.path_plan = None
                             self.selected_char = char
+                if ev.button == 2:
+                    self.panning = True
+                    self.pan_start_offset = self.offset
+                    self.pan_start_mouse = ev.pos
+            case pygame.MOUSEBUTTONUP:
+                if ev.button == 2:
+                    self.panning = False
+            case pygame.MOUSEWHEEL:
+                self.scroll = max(5, min(100, self.scroll + ev.y))
+                old_scale = self.scale
+                self.scale = self.scroll/10
+                self.offset = sub(self.last_mouse_pos, mul(mul(sub(self.last_mouse_pos, self.offset), 1/old_scale), self.scale))
             case _:
                 print(f"Unknown event: {ev}")
 
