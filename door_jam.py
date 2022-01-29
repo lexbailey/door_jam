@@ -231,7 +231,14 @@ class Game:
 
         self.guard = self.load_character('Guard.png')
         self.guard.selectable = False
-        self.guard.warp_to((0,0))
+        self.guard.warp_to(self.guard_points[0])
+
+        pos = self.guard_points[0]
+        guard_path = []
+        for p in self.guard_points[1:]:
+            guard_path.extend(nx.shortest_path(self.room, pos, p)[1:])
+            pos = p
+        self.guard.walk_path(guard_path)
 
         self.all_chars = [self.player, self.player2, self.guard]
 
@@ -301,6 +308,16 @@ class Game:
                         pass
         self.offset = (100,100)
         self.room = g
+        points = self.map.get_layer_by_name('Points')
+        guard_points = {}
+        for p in points:
+            props = p.properties
+            if 'index' in props:
+                i = props['index']
+                guard_points[i] = (math.floor(p.x/self.th),math.floor(p.y/self.th))
+        self.guard_points = [guard_points [k] for k in sorted(guard_points.keys())]
+        
+            
 
     def update(self, timediff):
         # Characters move one animation frame every 3 game frames
