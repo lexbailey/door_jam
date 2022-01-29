@@ -388,11 +388,13 @@ class Game:
     def apply_scale(self):
         ssize = mul(self.map_surface.get_size(), self.scale)
         self.scaled_map = pygame.transform.scale(self.map_surface, ssize)
+        self.scaled_map.convert_alpha()
         self.scaled_map.set_alpha(255)
         self.scaled_map_parts = {}
         for depth in self.map_parts:
             part = self.map_parts[depth]
             self.scaled_map_parts[depth] = pygame.transform.scale(part, ssize)
+            self.scaled_map_parts[depth].convert_alpha()
             self.scaled_map_parts[depth].set_alpha(255)
 
     def to_cursor_pos(self, pos):
