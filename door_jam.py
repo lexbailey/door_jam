@@ -246,9 +246,9 @@ class Game:
         self.tip_font = pygame.font.SysFont("sans", 18)
         self.guard_points = []
         self.levels = [
-            'Tiled/Map1.tmx'
-            ,'Tiled/Map2.tmx'
-            ,'Tiled/Map4.tmx'
+            #'Tiled/Map1.tmx'
+            #,'Tiled/Map2.tmx'
+            'Tiled/Map3.tmx'
         ]
         self.cur_level = 0
         self.load_next_level()
@@ -309,7 +309,10 @@ class Game:
                     this_path = []
 
             if self.guard_end is not None:
-                last_point = this_path[-1]
+                if len(this_path) >0:
+                    last_point = this_path[-1]
+                else:
+                    last_point = new_paths[-1][-1]
                 line = self.line(last_point, self.guard_end)
                 this_path.extend(line)
             new_paths.append(this_path)
@@ -464,17 +467,18 @@ class Game:
     def line(self, from_, to):
         fx, fy = from_
         tx, ty = to
-        line = []
+        line = [from_]
+        x, y = from_
         if fx==tx:
-            for y in range(fy,ty):
-                line.append((fx,y))
-            for y in reversed(range(ty,fy)):
-                line.append((fx,y))
+            dir_ = 1 if ty>fy else -1
+            while (x,y) != to:
+                y += dir_
+                line.append((x,y))
         if fy==ty:
-            for x in range(fx,tx):
-                line.append((x,fy))
-            for x in reversed(range(tx,fx)):
-                line.append((x,fy))
+            dir_ = 1 if tx>fx else -1
+            while (x,y) != to:
+                x += dir_
+                line.append((x,y))
         return line
 
 
@@ -518,7 +522,6 @@ class Game:
             for c in self.all_player_chars:
                 if tile == c.pos:
                     self.game_over()
-                    print("game over!")
 
     def winning_condition(self):
         return self.guard_done and all(self.is_in_room(c.pos, *self.goal_room) for c in self.all_player_chars)
