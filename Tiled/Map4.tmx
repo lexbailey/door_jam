@@ -127,14 +127,14 @@
     <property name="start" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="8" x="204" y="60">
+  <object id="8" x="204" y="348">
    <properties>
     <property name="guardID" type="int" value="0"/>
     <property name="guard_end" type="bool" value="true"/>
    </properties>
    <point/>
   </object>
-  <object id="9" x="204" y="348">
+  <object id="9" x="204" y="36">
    <properties>
     <property name="guardID" type="int" value="0"/>
     <property name="guard_start" type="bool" value="true"/>
@@ -145,7 +145,7 @@
   <object id="18" x="228" y="156">
    <properties>
     <property name="guardID" type="int" value="0"/>
-    <property name="guard_done" type="bool" value="true"/>
+    <property name="guard_passes" type="int" value="1"/>
     <property name="index" type="int" value="1"/>
    </properties>
    <point/>
