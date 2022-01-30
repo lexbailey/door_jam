@@ -322,6 +322,7 @@ class Game:
 
         self.guard_state = 'walk'
         self.guard_done = False
+        self.guard_passes = self.init_guard_passes
 
         self.all_guards = [self.guard]
         self.all_chars = self.all_guards + self.all_player_chars
@@ -447,6 +448,7 @@ class Game:
                     self.guard_end = (math.floor(p.x/self.th),math.floor(p.y/self.th))
                 passes = props.get('guard_passes')
                 if passes is not None:
+                    self.init_guard_passes = passes
                     self.guard_passes = passes
                     self.guard_pass_point = (math.floor(p.x/self.th),math.floor(p.y/self.th))
                 if 'index' in props:
