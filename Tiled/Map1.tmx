@@ -149,7 +149,7 @@
   <object id="10" x="132" y="156">
    <properties>
     <property name="guardID" type="int" value="0"/>
-    <property name="guard_done" type="bool" value="true"/>
+    <property name="guard_passes" type="int" value="1"/>
     <property name="index" type="int" value="1"/>
    </properties>
    <point/>
