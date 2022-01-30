@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="isometric" renderorder="right-down" width="17" height="16" tilewidth="48" tileheight="24" infinite="0" nextlayerid="7" nextobjectid="21">
+<map version="1.5" tiledversion="1.7.2" orientation="isometric" renderorder="right-down" width="17" height="16" tilewidth="48" tileheight="24" infinite="0" nextlayerid="7" nextobjectid="22">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <tileset firstgid="101" source="Overlays/GuardExits.tsx"/>
  <layer id="1" name="Floor" width="17" height="16">
@@ -147,6 +147,12 @@
     <property name="guardID" type="int" value="0"/>
     <property name="guard_passes" type="int" value="1"/>
     <property name="index" type="int" value="1"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="21" x="156" y="204">
+   <properties>
+    <property name="character" type="bool" value="false"/>
    </properties>
    <point/>
   </object>
