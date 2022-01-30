@@ -152,7 +152,7 @@
   </object>
   <object id="21" x="156" y="204">
    <properties>
-    <property name="character" type="bool" value="false"/>
+    <property name="character" type="bool" value="true"/>
    </properties>
    <point/>
   </object>
