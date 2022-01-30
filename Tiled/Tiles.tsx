@@ -29,6 +29,16 @@
    <property name="wall_south" type="bool" value="false"/>
   </properties>
  </tile>
+ <tile id="13">
+  <properties>
+   <property name="door_south" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="14">
+  <properties>
+   <property name="door_east" type="bool" value="true"/>
+  </properties>
+ </tile>
  <tile id="20">
   <properties>
    <property name="wall_east" type="bool" value="true"/>
@@ -47,6 +57,16 @@
    <property name="wall_south" type="bool" value="false"/>
   </properties>
  </tile>
+ <tile id="23">
+  <properties>
+   <property name="door_south" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="24">
+  <properties>
+   <property name="door_east" type="bool" value="true"/>
+  </properties>
+ </tile>
  <tile id="30">
   <properties>
    <property name="wall_east" type="bool" value="true"/>
@@ -63,6 +83,16 @@
   <properties>
    <property name="wall_east" type="bool" value="true"/>
    <property name="wall_south" type="bool" value="false"/>
+  </properties>
+ </tile>
+ <tile id="33">
+  <properties>
+   <property name="door_south" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="34">
+  <properties>
+   <property name="door_east" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="40">

@@ -79,6 +79,30 @@ def heading_to_screen(heading):
         ,WEST:SCREEN_WEST
     }[heading]
 
+def turn_left(h):
+    return {
+        NORTH:WEST
+        ,EAST:NORTH
+        ,SOUTH:EAST
+        ,WEST:SOUTH
+    }[h]
+
+def turn_right(h):
+    return {
+        NORTH:EAST
+        ,EAST:SOUTH
+        ,SOUTH:WEST
+        ,WEST:NORTH
+    }[h]
+
+def heading_name(h):
+    return {
+        NORTH:'north'
+        ,EAST:'east'
+        ,SOUTH:'south'
+        ,WEST:'west'
+    }[h]
+
 class Animation:
     def __init__(self, filename, size, start_frame, end_frame):
         w,h = size
@@ -118,6 +142,7 @@ class Character:
         self.heading = EAST
         self.screen_heading = SCREEN_EAST
         self.selectable = True
+        self.walking = False
 
     def is_selected(self):
         return self.selected
@@ -170,6 +195,8 @@ class Character:
         self.step_progress = 0
 
     def idle(self):
+        self.target = self.pos
+        self.walking = False
         self.set_anim(
             {
                 NORTH: 'idle_north'
@@ -181,6 +208,7 @@ class Character:
 
     def walk_path(self, path):
         self.step_progress = 0
+        self.walking = True
         if path is not None:
             if len(path) > 0:
                 [self.target, *self.path] = path
@@ -198,10 +226,8 @@ class Character:
                         }[self.heading]
                     )
             else:
-                self.target = self.pos
                 self.idle()
         else:
-            self.target = self.pos
             self.idle()
 
 class Game:
@@ -212,7 +238,8 @@ class Game:
         self.can_render.set()
         self.last_time = time.time()
         self.font = pygame.font.SysFont("monospace", 18)
-        self.load_map('Tiled/Map1.tmx')
+        self.guard_points = []
+        self.load_map('Tiled/Map2.tmx')
         self.cursor = None
         self.selection = None
         self.path_plan = None
@@ -226,25 +253,55 @@ class Game:
 
         self.marker = Animation('Pointer.png', (16,16), 0, 15)
 
-        self.player = self.load_character('Character1.png')
+        self.player1 = self.load_character('Character1.png')
         self.player2 = self.load_character('Character1.png')
-        self.player.warp_to((3,2))
-        self.player2.warp_to((7,13))
+        self.player3 = self.load_character('Character1.png')
+        self.player4 = self.load_character('Character1.png')
+        self.player1.warp_to((10,6))
+        self.player1.set_anim('idle_south')
+        self.player2.warp_to((11,6))
+        self.player2.set_anim('idle_south')
+        self.player3.warp_to((12,7))
+        self.player3.set_anim('idle_west')
+        self.player4.warp_to((12,8))
+        self.player4.set_anim('idle_west')
 
         self.guard = self.load_character('Guard.png')
         self.guard.selectable = False
-        self.guard.warp_to(self.guard_points[0])
+        if self.guard_points:
+            self.guard.warp_to(self.guard_points[0])
 
-        pos = self.guard_points[0]
-        guard_path = []
-        for p in self.guard_points[1:]:
-            guard_path.extend(nx.shortest_path(self.room, pos, p)[1:])
-            pos = p
-        self.guard.walk_path(guard_path)
+            pos = self.guard_points[0]
+            guard_path = []
+            for p in self.guard_points[1:]:
+                guard_path.extend(nx.shortest_path(self.room, pos, p)[1:])
+                pos = p
+            new_paths = []
+            this_path = []
+            for p in guard_path:
+                door = self.door_from(p)
+                if door is None:
+                    this_path.append(p)
+                else:
+                    from_, to = door
+                    this_path.append(p)
+                    new_paths.append(this_path)
+                    this_path = []
+            new_paths.append(this_path)
+            next_path, *self.guard_paths = new_paths
+            self.guard.walk_path(next_path)
 
-        self.all_chars = [self.player, self.player2, self.guard]
+        self.guard_state = 'walk'
+
+        self.all_chars = [self.player1, self.player2, self.player3,self.player4, self.guard]
 
         self.apply_scale()
+
+    def door_from(self, pos):
+        for (f,t) in self.doors:
+            if f == pos:
+                return (f,t)
+        return None
 
     def load_character(self, sprite_sheet, size=(48,48)):
         new_char = Character(self.marker, (self.tw, self.th))
@@ -276,9 +333,15 @@ class Game:
         self.sw, self.sh = surface_geom(self.w, self.h, self.tw, self.th)
         self.map_surface = pygame.Surface((self.sw,self.sh))
         self.map_parts = {}
+        self.doors = []
         g = nx.Graph()
         layer_id = lambda layer: next(i for i, l in enumerate(self.map.layers) if l==layer)
-        for layer,name in [(self.map.get_layer_by_name(name),name) for name in ['Floor', 'Walls', 'Doors']]:
+        def layer_by_name(name):
+            try:
+                return self.map.get_layer_by_name(name)
+            except ValueError:
+                return None
+        for layer,name in [(layer_by_name(name),name) for name in ['Floor', 'Walls', 'Doors']]:
             if not isinstance(layer, pytmx.pytmx.TiledTileLayer):
                 continue
             for x, y, img_gid in layer.iter_data():
@@ -305,6 +368,8 @@ class Game:
                             g.add_edge((x,y), (ox,oy))
                 east_wall = props is not None and props.get('wall_east', False)
                 south_wall = props is not None and props.get('wall_south', False)
+                east_door = props is not None and props.get('door_east', False)
+                south_door = props is not None and props.get('door_south', False)
                 to_remove = []
                 if east_wall:
                     other = add(EAST, (x,y))
@@ -312,6 +377,14 @@ class Game:
                 if south_wall:
                     other = add(SOUTH, (x,y))
                     to_remove.append(((x,y), other))
+                if east_door:
+                    other = add(EAST, (x,y))
+                    self.doors.append(((x,y), other))
+                    self.doors.append((other, (x,y)))
+                if south_door:
+                    other = add(SOUTH, (x,y))
+                    self.doors.append(((x,y), other))
+                    self.doors.append((other, (x,y)))
                 for from_, to in to_remove:
                     try:
                         g.remove_edge(from_, to)
@@ -319,23 +392,51 @@ class Game:
                         pass
         self.offset = (100,100)
         self.room = g
-        points = self.map.get_layer_by_name('Points')
-        guard_points = {}
-        for p in points:
-            props = p.properties
-            if 'index' in props:
-                i = props['index']
-                guard_points[i] = (math.floor(p.x/self.th),math.floor(p.y/self.th))
-        self.guard_points = [guard_points [k] for k in sorted(guard_points.keys())]
+        points = layer_by_name('Points')
+        if points:
+            guard_points = {}
+            for p in points:
+                props = p.properties
+                if 'index' in props:
+                    i = props['index']
+                    guard_points[i] = (math.floor(p.x/self.th),math.floor(p.y/self.th))
+            self.guard_points = [guard_points [k] for k in sorted(guard_points.keys())]
         
-            
-
     def update(self, timediff):
         # Characters move one animation frame every 3 game frames
         self.three_frame = (self.three_frame + 1) % 3
         if self.three_frame == 0:
             for c in self.all_chars:
                 c.next_frame()
+            match self.guard_state:
+                case 'walk':
+                    if not self.guard.walking:
+                        door = self.door_from(self.guard.pos)
+                        if door is not None:
+                            from_, to = door
+                            self.guard.walk_path([to])
+                            self.guard_exit = from_
+                            self.guard_counter = 0
+                            self.guard_state = 'enter_room'
+                case 'enter_room':
+                    if not self.guard.walking:
+                        if self.guard_counter == 0:
+                            new_heading = turn_left(self.guard.heading)
+                            self.guard.heading = new_heading
+                            self.guard.idle()
+                        if self.guard_counter == 10:
+                            new_heading = turn_right(self.guard.heading)
+                            self.guard.heading = new_heading
+                            self.guard.idle()
+                        if self.guard_counter == 20:
+                            new_heading = turn_right(self.guard.heading)
+                            self.guard.heading = new_heading
+                            self.guard.idle()
+                        if self.guard_counter > 30:
+                            next_path, *self.guard_paths = self.guard_paths
+                            self.guard.walk_path([self.guard_exit, *next_path])
+                            self.guard_state = 'walk'
+                        self.guard_counter += 1
 
     def draw_cursor(self, pos, color):
         cx,cy = pos
@@ -405,7 +506,7 @@ class Game:
     def select_character(self, pos):
         selected = None
         for c in self.all_chars:
-            if selected is None and c.pos == pos and c.selectable:
+            if selected is None and c.pos == pos and c.selectable and not c.walking:
                 c.select()
                 selected = c
             else:
