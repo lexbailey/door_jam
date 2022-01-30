@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="isometric" renderorder="right-down" width="16" height="16" tilewidth="48" tileheight="24" infinite="0" nextlayerid="7" nextobjectid="24">
+<map version="1.5" tiledversion="1.7.2" orientation="isometric" renderorder="right-down" width="16" height="16" tilewidth="48" tileheight="24" infinite="0" nextlayerid="7" nextobjectid="15">
  <tileset firstgid="1" source="Tiles.tsx"/>
  <tileset firstgid="101" source="Overlays.tsx"/>
+ <tileset firstgid="115" source="Overlays/GuardExits.tsx"/>
  <layer id="1" name="Floor" width="16" height="16">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,
-0,0,0,1,2,2,2,2,1,0,0,0,0,0,0,0,
-0,0,0,1,2,2,2,2,1,0,0,0,0,0,0,0,
-0,0,0,1,2,2,2,2,1,2,2,1,0,0,0,0,
-0,0,0,1,2,2,1,1,1,2,2,1,0,0,0,0,
-0,0,0,1,2,2,1,1,1,2,2,1,0,0,0,0,
-0,0,0,1,2,2,1,1,1,1,1,1,0,0,0,0,
-0,0,0,1,2,2,1,2,2,2,2,1,0,0,0,0,
-0,0,0,1,1,1,1,2,2,2,2,1,0,0,0,0,
-0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,
-0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,
-0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,
+0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,
+0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,
+0,0,2,2,2,1,0,0,0,1,2,2,2,0,0,0,
+0,0,2,2,2,1,54,0,0,1,2,2,2,0,0,0,
+0,0,2,2,2,1,0,0,0,1,2,2,2,0,0,0,
+0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
@@ -25,19 +26,19 @@
  <layer id="2" name="Walls" width="16" height="16">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,12,12,12,12,12,12,0,0,0,0,0,0,0,
-0,0,13,0,12,12,12,12,0,0,0,0,0,0,0,0,
-0,0,13,13,0,0,0,13,0,0,0,0,0,0,0,0,
-0,0,13,13,0,0,0,13,0,12,12,12,0,0,0,0,
-0,0,13,13,12,12,0,11,13,0,13,0,0,0,0,0,
-0,0,13,13,0,13,0,0,13,0,0,0,0,0,0,0,
-0,0,13,13,0,0,0,0,13,22,41,0,0,0,0,0,
-0,0,13,13,0,13,0,12,12,12,32,0,0,0,0,0,
-0,0,13,13,12,11,13,0,0,0,33,0,0,0,0,0,
-0,0,13,12,0,0,13,12,12,0,51,0,0,0,0,0,
-0,0,0,23,0,0,0,13,0,0,0,0,0,0,0,0,
-0,0,0,23,0,12,12,51,0,0,0,0,0,0,0,0,
-0,0,0,23,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,12,12,12,0,0,0,0,0,0,0,
+0,0,0,0,0,13,0,0,13,0,0,0,0,0,0,0,
+0,0,0,0,0,11,12,0,11,12,0,0,0,0,0,0,
+0,0,12,12,11,0,0,0,0,13,22,22,22,0,0,0,
+0,23,0,0,13,0,0,0,13,13,0,0,13,0,0,0,
+0,23,0,0,0,0,0,0,13,0,0,0,13,0,0,0,
+0,23,12,12,11,0,12,12,11,13,12,12,11,0,0,0,
+0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
@@ -48,13 +49,13 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,
-0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,
+0,0,0,0,15,0,0,0,0,15,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -62,7 +63,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="6" name="Overlay" width="16" height="16">
+ <layer id="5" name="GuardEntrance" width="16" height="16">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -72,97 +73,100 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,111,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,126,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,125,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,124,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,123,0,0,0,129,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,128,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,127,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="6" name="GuardExit" width="16" height="16">
+  <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,111,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,126,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,125,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,124,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,123,0,0,0,129,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,128,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,127,0,0,0,0,0,0
 </data>
  </layer>
  <objectgroup id="3" name="Points">
-  <object id="7" x="216" y="120" width="48" height="72"/>
-  <object id="9" x="96" y="72" width="96" height="72">
-   <properties>
-    <property name="goal" type="bool" value="true"/>
-   </properties>
-  </object>
-  <object id="11" x="96" y="144" width="48" height="96"/>
-  <object id="13" x="168" y="216" width="96" height="48">
-   <properties>
-    <property name="start" type="bool" value="true"/>
-   </properties>
-  </object>
-  <object id="14" x="276" y="132">
+  <object id="1" x="132" y="228">
    <properties>
     <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="0"/>
    </properties>
    <point/>
   </object>
-  <object id="15" x="156" y="204">
+  <object id="2" x="228" y="228">
    <properties>
     <property name="guardID" type="int" value="0"/>
-    <property name="index" type="int" value="1"/>
+    <property name="index" type="int" value="3"/>
    </properties>
    <point/>
   </object>
-  <object id="16" x="156" y="156">
+  <object id="3" x="204" y="132">
    <properties>
     <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="2"/>
    </properties>
    <point/>
   </object>
-  <object id="17" x="132" y="60">
+  <object id="6" x="48" y="144" width="72" height="72">
    <properties>
-    <property name="guardID" type="int" value="0"/>
-    <property name="index" type="int" value="4"/>
+    <property name="goal" type="bool" value="true"/>
    </properties>
-   <point/>
   </object>
-  <object id="18" x="84" y="252">
+  <object id="7" x="240" y="144" width="72" height="72">
    <properties>
-    <property name="guardID" type="int" value="0"/>
-    <property name="index" type="int" value="5"/>
+    <property name="start" type="bool" value="true"/>
    </properties>
-   <point/>
   </object>
-  <object id="19" x="204" y="324">
-   <properties>
-    <property name="guardID" type="int" value="0"/>
-    <property name="index" type="int" value="6"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="20" x="276" y="276">
-   <properties>
-    <property name="guardID" type="int" value="0"/>
-    <property name="index" type="int" value="7"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="21" x="396" y="132">
-   <properties>
-    <property name="guard_start" type="bool" value="true"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="22" x="396" y="276">
+  <object id="8" x="228" y="348">
    <properties>
     <property name="guard_end" type="bool" value="true"/>
    </properties>
    <point/>
   </object>
-  <object id="23" x="180" y="156">
+  <object id="9" x="132" y="348">
    <properties>
-    <property name="guardID" type="int" value="0"/>
-    <property name="guard_done" type="bool" value="true"/>
-    <property name="index" type="int" value="3"/>
+    <property name="guard_start" type="bool" value="true"/>
    </properties>
    <point/>
   </object>
+  <object id="10" x="132" y="156">
+   <properties>
+    <property name="guardID" type="int" value="0"/>
+    <property name="guard_done" type="bool" value="true"/>
+    <property name="index" type="int" value="1"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="11" x="300" y="204">
+   <properties>
+    <property name="character" type="bool" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="12" x="276" y="156">
+   <properties>
+    <property name="character" type="bool" value="true"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="14" x="144" y="72" width="72" height="48"/>
  </objectgroup>
 </map>
