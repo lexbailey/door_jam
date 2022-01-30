@@ -273,8 +273,8 @@ class Game:
         self.h = self.map.height
         self.tw = self.map.tilewidth
         self.th = self.map.tileheight
-        self.sh, self.sw = surface_geom(self.w, self.h, self.tw, self.th)
-        self.map_surface = pygame.Surface((self.sh,self.sw))
+        self.sw, self.sh = surface_geom(self.w, self.h, self.tw, self.th)
+        self.map_surface = pygame.Surface((self.sw,self.sh))
         self.map_parts = {}
         g = nx.Graph()
         layer_id = lambda layer: next(i for i, l in enumerate(self.map.layers) if l==layer)
@@ -293,9 +293,9 @@ class Game:
                     depth = x+y+1
                     part = self.map_parts.get(depth)
                     if part is None:
-                        part = pygame.Surface((self.sh, self.sw))
+                        part = pygame.Surface((self.sw, self.th*2))
                         self.map_parts[depth]=part
-                    part.blit(img, pos)
+                    part.blit(img, sub(pos, (0,-self.th+((depth-1)*(self.th/2)))))
                 props = self.map.get_tile_properties_by_gid(img_gid)
                 if props and props.get('floor', False):
                     g.add_node((x,y))
@@ -379,7 +379,7 @@ class Game:
         for depth in range(0, self.w+self.h):
             part = self.scaled_map_parts.get(depth)
             if part is not None:
-                self.win.blit(part, self.offset)
+                self.win.blit(part, add(self.offset, (0,math.ceil(self.scale * (-self.th+(depth-1) * (self.th/2))))))
             chars = chars_for_depth.get(depth, [])
             for char in chars:
                 pos = self.coords(char.pos, char.size)
@@ -393,6 +393,7 @@ class Game:
         self.scaled_map_parts = {}
         for depth in self.map_parts:
             part = self.map_parts[depth]
+            ssize = mul(part.get_size(), self.scale)
             self.scaled_map_parts[depth] = pygame.transform.scale(part, ssize)
             self.scaled_map_parts[depth].convert_alpha()
             self.scaled_map_parts[depth].set_colorkey((0, 0, 0))
