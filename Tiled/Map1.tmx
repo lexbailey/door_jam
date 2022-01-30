@@ -63,47 +63,62 @@
  </layer>
  <objectgroup id="3" name="Points">
   <object id="7" x="216" y="120" width="48" height="72"/>
-  <object id="9" x="96" y="72" width="96" height="72"/>
+  <object id="9" x="96" y="72" width="96" height="72">
+   <properties>
+    <property name="goal" type="bool" value="false"/>
+   </properties>
+  </object>
   <object id="11" x="96" y="144" width="48" height="96"/>
-  <object id="13" x="168" y="216" width="96" height="48"/>
+  <object id="13" x="168" y="216" width="96" height="48">
+   <properties>
+    <property name="start" type="bool" value="true"/>
+   </properties>
+  </object>
   <object id="14" x="276" y="132">
    <properties>
+    <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="0"/>
    </properties>
    <point/>
   </object>
   <object id="15" x="156" y="204">
    <properties>
+    <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="1"/>
    </properties>
    <point/>
   </object>
   <object id="16" x="156" y="156">
    <properties>
+    <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="2"/>
    </properties>
    <point/>
   </object>
   <object id="17" x="132" y="60">
    <properties>
+    <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="3"/>
    </properties>
    <point/>
   </object>
   <object id="18" x="84" y="252">
    <properties>
+    <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="4"/>
    </properties>
    <point/>
   </object>
   <object id="19" x="204" y="324">
    <properties>
+    <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="5"/>
    </properties>
    <point/>
   </object>
   <object id="20" x="276" y="276">
    <properties>
+    <property name="guardID" type="int" value="0"/>
     <property name="index" type="int" value="6"/>
    </properties>
    <point/>
