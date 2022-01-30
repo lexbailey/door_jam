@@ -250,6 +250,7 @@ class Game:
             ,'Tiled/Map2.tmx'
             ,'Tiled/Map3.tmx'
             ,'Tiled/Map4.tmx'
+            ,'Tiled/Map5.tmx'
         ]
         self.cur_level = 0
         self.load_next_level()
