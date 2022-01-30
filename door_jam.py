@@ -246,9 +246,10 @@ class Game:
         self.tip_font = pygame.font.SysFont("sans", 18)
         self.guard_points = []
         self.levels = [
-            #'Tiled/Map1.tmx'
-            #,'Tiled/Map2.tmx'
-            'Tiled/Map3.tmx'
+            'Tiled/Map1.tmx'
+            ,'Tiled/Map2.tmx'
+            ,'Tiled/Map3.tmx'
+            ,'Tiled/Map4.tmx'
         ]
         self.cur_level = 0
         self.load_next_level()
@@ -529,7 +530,7 @@ class Game:
     def update(self, timediff):
         if not self.game_is_over:
             # Characters move one animation frame every 3 game frames
-            self.three_frame = (self.three_frame + 1) % 3
+            self.three_frame = (self.three_frame + 1) % 2
             if self.three_frame == 0:
                 for c in self.all_chars:
                     c.next_frame()
