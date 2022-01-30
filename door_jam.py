@@ -287,16 +287,19 @@ class Game:
         self.guard.selectable = False
         if self.guard_points:
             pos = self.guard_points[0]
-            guard_path = []
+            guard_path = [pos]
             for p in self.guard_points[1:]:
                 guard_path.extend(nx.shortest_path(self.room, pos, p)[1:])
                 pos = p
             new_paths = []
 
+            print('foo', guard_path[0])
             if self.guard_start is not None:
                 first_point = guard_path[0]
                 line = self.line(self.guard_start, first_point)
+                print(first_point, self.guard_start, line)
                 guard_path = [*line, *guard_path[1:]]
+            print(guard_path)
             self.guard.warp_to(guard_path[0])
             this_path = []
             for p in guard_path:
@@ -317,6 +320,7 @@ class Game:
                 line = self.line(last_point, self.guard_end)
                 this_path.extend(line)
             new_paths.append(this_path)
+            print(new_paths)
             next_path, *self.guard_paths = new_paths
             self.guard.walk_path(next_path)
 
@@ -463,6 +467,7 @@ class Game:
                     self.char_points.append((math.floor(p.x/self.th),math.floor(p.y/self.th)))
                     
             self.guard_points = [guard_points [k] for k in sorted(guard_points.keys())]
+            print(self.guard_points)
 
 
     def line(self, from_, to):
