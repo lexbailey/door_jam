@@ -134,7 +134,7 @@
    </properties>
    <point/>
   </object>
-  <object id="9" x="204" y="36">
+  <object id="9" x="204" y="60">
    <properties>
     <property name="guardID" type="int" value="0"/>
     <property name="guard_start" type="bool" value="true"/>
