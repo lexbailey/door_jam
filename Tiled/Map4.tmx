@@ -127,7 +127,7 @@
     <property name="start" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="8" x="204" y="36">
+  <object id="8" x="204" y="60">
    <properties>
     <property name="guardID" type="int" value="0"/>
     <property name="guard_end" type="bool" value="true"/>

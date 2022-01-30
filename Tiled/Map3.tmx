@@ -127,13 +127,13 @@
     <property name="start" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="8" x="108" y="60">
+  <object id="8" x="108" y="84">
    <properties>
     <property name="guard_end" type="bool" value="true"/>
    </properties>
    <point/>
   </object>
-  <object id="9" x="132" y="252">
+  <object id="9" x="156" y="252">
    <properties>
     <property name="guard_start" type="bool" value="true"/>
    </properties>
