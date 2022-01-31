@@ -3,7 +3,7 @@ game jam game :)
 
 # copyright
 
-Copyright 2012 Lex Bailey (aka Daniel J A Bailey) and Dualunitfold
+Copyright 2022 Lex Bailey (aka Daniel J A Bailey) and Dualunitfold
 
 # license
 
